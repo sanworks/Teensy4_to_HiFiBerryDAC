@@ -1,0 +1,11 @@
+Teensy --> Raspberry Pi
+
+Pin 7  --> GPIO Pin 21  (I2S OUT1)
+Pin 9  --> GPIO Pin 16  (DAC Reset Pin for HiFiBerry DAC2 HD)
+Pin 18 --> GPIO Pin 3   (I2C SDA)
+Pin 19 --> GPIO Pin 5   (I2C SCL)
+Pin 20 --> GPIO Pin 19  (I2S LRCLK)
+Pin 21 --> GPIO Pin 18  (I2S BCLK)
+3.3V   --> GPIO Pin 1   (3.3V Supply)
+VIN    --> GPIO Pin 2,4 (USB/5V Supply)
+GND    --> GPIO Pins 6,9,14,20,25,30,34,39 (GND)
