@@ -1,7 +1,6 @@
 Known issues in current release:
--In I2S master mode, harmonic distortion is above the board spec.
--In I2S slave mode, sound plays at half the expected sampling rate. Waveform is jagged - as though it is missing every 2nd sample
--In either mode, setting a different sine signal to the right audio channel with AudioConnection results in a corrupted signal on both channels
+-Harmonic distortion is above the board spec.
+-Setting a different sine signal to the right audio channel with AudioConnection results in a corrupted signal on both channels
 
 Compatability:
 -Teensy As I2S Master --> HiFiBerry DAC+ and HiFiBerry DAC2 Pro

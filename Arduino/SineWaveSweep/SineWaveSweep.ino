@@ -109,7 +109,7 @@ void setup_PCM5122_AsI2SMaster() {
   i2c_write(PCM5122_ADDRESS, 28, B00000011); //DAC clock divider (B00001 = divide by 2, etc. 3 = divide by 4, same for next 4 dividers)
   i2c_write(PCM5122_ADDRESS, 29, B00000011); //CP clock divider
   i2c_write(PCM5122_ADDRESS, 30, B00000111); //OSR clock divider
-  i2c_write(PCM5122_ADDRESS, 32, B00001111); //Master mode BCK divider
+  i2c_write(PCM5122_ADDRESS, 32, B00000111); //Master mode BCK divider
   i2c_write(PCM5122_ADDRESS, 33, B00111111); //Master mode LRCK divider
   i2c_write(PCM5122_ADDRESS, 86, B00100000); // Reg 86 = GPIO write = 36 (line 6 high) // Enable 22.5792MHz precision clock for 44.1kHz
   i2c_write(PCM5122_ADDRESS, 19, B00000001); // Clock sync request
