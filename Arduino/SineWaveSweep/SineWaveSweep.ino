@@ -19,46 +19,71 @@
 
 */
 
-// NOTE: Configure user macros below to set Teensy as I2S master or slave, to enable or disable the DAC2 Pro headphone amp, or to set the freq range of the sine wave sweep.
-// COMPATIBILITY: Teensy 4.0-4.1, HIFiBerry DAC+, DAC2 Pro. **DOES NOT** work with HiFiBerry DAC2 HD.
+// NOTE: Configure user macros below to indicate the HiFiBerry DAC board you have attached, and to set the freq range of the sine wave sweep.
+// COMPATIBILITY: Teensy 4.0-4.1, HIFiBerry DAC+, DAC2 Pro, DAC2 HD. Note: For HIFiBerry DAC+ Pro (discontinued), configure as DAC2 Pro.
 
 #include "Wire.h"
 #include <Audio.h>
 #include <utility/imxrt_hw.h>
-#define PCM5122_ADDRESS 0x4D
-#define TPA6130A2_ADDRESS 0x60
 
-// User Macros
-#define TEENSY_I2S_MASTER 1 // Set to 1 for Teensy as I2S master. Set to 0 for HiFiBerry as I2S master using its precision clock source
-#define IS_DAC2_PRO 0       // Set to 1 to enable headphone amp (DAC2 Pro only), otherwise 0
+// ---------------USER MACROS--------------
+
+// ------------Device Selection------------
+// Uncomment one line in the group below to indicate your board
+// #define HIFIBERRY_DACPLUS
+// #define HIFIBERRY_DAC2_PRO
+// #define HIFIBERRY_DAC2_HD
+
+// ------------Playback Parameters---------
 #define HEADPHONE_AMP_GAIN 10 // 0-63, DAC2 Pro only
 #define SINE_FREQ_MIN 20
 #define SINE_FREQ_MAX 10000
 
+// -------------END USER MACROS------------
+
+// Device I2C Addresses
+#define PCM5122_ADDRESS 0x4D
+#define TPA6130A2_ADDRESS 0x60
+#define PCM1796_ADDRESS 0x4C
+#define SI5351_ADDRESS 0x62
+
+// Pins
+#define RESET_PIN 9 // Only used for HiFiBerry DAC2 HD
+
 uint32_t sineFrequency = SINE_FREQ_MIN;
 
-#if TEENSY_I2S_MASTER
+#ifdef HIFIBERRY_DACPLUS
   AudioOutputI2S i2s1; 
 #else
   AudioOutputI2Sslave i2s1; 
 #endif
+
 AudioSynthWaveformSine   sine1;
 AudioConnection          patchCord1(sine1, 0, i2s1, 0);
 AudioConnection          patchCord2(sine1, 0, i2s1, 1);
+
+#if !defined(HIFIBERRY_DACPLUS) && !defined(HIFIBERRY_DAC2_PRO) && !defined(HIFIBERRY_DAC2_HD)
+#error Error! You must uncomment a macro in the Device Selection section at the top of this sketch to indicate which HiFiBerry board you are using
+#endif
 
 void setup() {
   AudioMemory(2);
   sine1.amplitude(0.5);
   sine1.frequency(SINE_FREQ_MIN);
   Wire.begin();
-  #if TEENSY_I2S_MASTER
+  #ifdef HIFIBERRY_DACPLUS
     setup_PCM5122_AsI2SSlave();
-  #else
-    setup_PCM5122_AsI2SMaster();
   #endif
-  if (IS_DAC2_PRO) {
+  #ifdef HIFIBERRY_DAC2_PRO
+    setup_PCM5122_AsI2SMaster();
     setup_TPA6130A2();
-  }
+  #endif
+  #ifdef HIFIBERRY_DAC2_HD
+    pinMode(RESET_PIN, OUTPUT);
+    digitalWrite(RESET_PIN, LOW);
+    setup_SI5351();
+    setup_PCM1796();  
+  #endif
 }
 
 void loop() {
@@ -126,6 +151,28 @@ void setup_TPA6130A2() {
   //                         REG# Bits
   i2c_write(TPA6130A2_ADDRESS, 1, B11000000); // Set both output channels enabled
   i2c_write(TPA6130A2_ADDRESS, 2, HEADPHONE_AMP_GAIN); // 64 gain taper levels are valid in range 0-63. 10 is a comfortable initial volume.
+}
+
+void setup_SI5351() {
+  // This setup configures the SI5351 clock source to supply clocks for 16-bit 44.1khz stereo sampling
+  byte REGs[] = {0x02,0x03,0x07,0x0F,0x10,0x11,0x12,0x13,0x14,0x15,0x16,0x17,0x18,0x1C,0x1D,0x1F,0x2A,0x2C,0x2F,0x30,0x31,0x32,0x34,0x37,0x38,0x39,0x3A,0x3B,0x3E,0x3F,0x40,0x41,0x5A,0x5B,0x95,0x96,0x97,0x98,0x99,0x9A,0x9B,0xA2,0xA3,0xA4,0xB7,0xB1,0x1A,0x1B,0x1E,0x20,0x21,0x2B,0x2D,0x2E,0x33,0x35,0x36,0x3C,0x3D,0xB1};
+  byte Vals[] = {0x53,0x00,0x20,0x00,0x0D,0x1D,0x0D,0x8C,0x8C,0x8C,0x8C,0x8C,0x2A,0x00,0x0F,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x01,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x92,0xAC,0x3D,0x09,0xF3,0x13,0x75,0x04,0x11,0xE0,0x01,0x9D,0x00,0x42,0x7A,0xAC};
+  for (int i = 0; i < sizeof(REGs); i++) {
+    i2c_write(SI5351_ADDRESS, REGs[i], Vals[i]);
+  }
+}
+
+void setup_PCM1796() {
+  digitalWrite(RESET_PIN, HIGH);
+  delay(1);
+  digitalWrite(RESET_PIN, LOW);
+  delay(1);
+  digitalWrite(RESET_PIN, HIGH);
+  delay(10);
+  i2c_write(PCM1796_ADDRESS, 16, B11110101); // -5 DB - Left Ch. 255 = no attenuation. Each bit subtracts 0.5dB
+  i2c_write(PCM1796_ADDRESS, 17, B11110101); // -5 DB - Right Ch 
+  i2c_write(PCM1796_ADDRESS, 18, B11000000); // Use reg 16+17 for attenuation, Audio format = 16 bit I2S
+  i2c_write(PCM1796_ADDRESS, 19, B00000000); 
 }
 
 void i2c_write(byte i2cAddress, byte address, byte val) {
