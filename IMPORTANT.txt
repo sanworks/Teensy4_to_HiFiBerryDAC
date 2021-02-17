@@ -1,5 +1,0 @@
-### IMPORTANT ###
-If you are reading this message, this code and CAD repository is an alpha release!
-The example code still has at least one performance issue (see Arduino folder for known bugs)
-The example code does not yet work with HiFiBerry DAC2 HD.
-Performance is NOT yet able to meet the specs of the DAC and/or HiFiBerry's claimed SNR and THD. Please check back for resolution of the existing issues in future updates.
