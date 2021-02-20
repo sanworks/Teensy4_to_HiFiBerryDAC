@@ -37,7 +37,7 @@
 // ------------Playback Parameters---------
 #define HEADPHONE_AMP_GAIN 10 // 0-63, DAC2 Pro only
 #define SINE_FREQ_MIN 20
-#define SINE_FREQ_MAX 10000
+#define SINE_FREQ_MAX 20000
 
 // -------------END USER MACROS------------
 
@@ -67,9 +67,8 @@ AudioConnection          patchCord2(sine1, 0, i2s1, 1);
 #endif
 
 void setup() {
-  AudioMemory(2);
+  AudioMemory(10);
   sine1.amplitude(0.5);
-  sine1.frequency(SINE_FREQ_MIN);
   Wire.begin();
   #ifdef HIFIBERRY_DACPLUS
     setup_PCM5122_AsI2SSlave();

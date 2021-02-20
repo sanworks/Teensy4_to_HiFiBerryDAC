@@ -1,5 +1,5 @@
 Known issues in current release:
--Setting a different sine signal to the right audio channel with AudioConnection results in a corrupted signal on both channels (this issue may require mods to the Teensy Audio library)
+None!
 
 Compatability:
 -Teensy As I2S Master --> HiFiBerry DAC+ and HiFiBerry DAC2 Pro
