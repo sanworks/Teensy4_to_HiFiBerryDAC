@@ -3,7 +3,7 @@ Notes about the Teensy4 HiFiBerry Breakout board
 There are two versions of the board:
 1. rev 1.X-T mounts to the HiFiBerry DAC's male GPIO header from above, 
 using adafruit part# 1979: https://www.adafruit.com/product/1979
-***WARNING!*** In at least one test, this version has had an audio integrity issue (crackling) that did not exist for the same firmware on rev 1.X-B!
+***WARNING!*** When used with DAC2 HD, this version has had an audio integrity issue (crackling) that did not exist for the same firmware on rev 1.X-B!
 
 2. rev 1.X-B mounts to the HiFiBerry DAC's female GPIO header from below, 
 using adafruit part# 3662: https://www.adafruit.com/product/3662
